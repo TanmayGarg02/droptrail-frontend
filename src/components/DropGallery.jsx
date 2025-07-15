@@ -1,45 +1,30 @@
-import { useEffect, useState } from 'react';
-import { getAllDrops } from '../services/api';
-
-export default function DropGallery() {
+import { useEffect, useState } from "react";
+import { getDrops } from "../services/api";
+function DropGallery() {
   const [drops, setDrops] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDrops = async () => {
-      try {
-        const res = await getAllDrops();
-        setDrops(res.data);
-      } catch (err) {
-        console.error('Failed to fetch drops', err);
-      }
-    };
-    fetchDrops();
+    getDrops().then((data) => {
+      setDrops(data);
+      setLoading(false);
+    });
   }, []);
 
+  if (loading) return <p>Loading drops...</p>;
+  if (!drops.length) return <p>No drops yet</p>;
+
   return (
-    <div style={{ marginTop: '2rem' }}>
-      <h2>🖼️ Previous Drops</h2>
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '10px',
-        justifyContent: 'center'
-      }}>
-        {drops.map(drop => (
-          <div key={drop.id} style={{
-            border: '1px solid #ccc',
-            borderRadius: '6px',
-            padding: '10px',
-            background: '#fff',
-            width: '150px'
-          }}>
-            <img src={drop.imageData} alt="drop" width="100%" />
-            <p style={{ fontSize: '12px' }}>
-              📍 {drop.latitude.toFixed(2)}, {drop.longitude.toFixed(2)}
-            </p>
-          </div>
-        ))}
-      </div>
+    <div className="drop-gallery">
+      {drops.map((drop) => (
+        <div key={drop.id} className="drop-item">
+          <img src={`data:image/png;base64,${drop.imageData}`} />
+          <p>📍 {drop.latitude.toFixed(4)}, {drop.longitude.toFixed(4)}</p>
+          <p>🕒 {new Date(drop.timeStamp).toLocaleString()}</p>
+        </div>
+      ))}
     </div>
   );
 }
+
+export default DropGallery;
